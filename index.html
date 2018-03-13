@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8"/>
+    <title>Turing machine</title>
+    <script src="https://unpkg.com/vue"></script>
+</head>
+<body>
+<div id="app">
+    <input v-model="states" placeholder="states">
+    <input v-model="symbols" placeholder="symbols">
+    <table>
+        <tr>
+            <th>X</th>
+            <th v-for="symbol in symbolsArray">{{ symbol }}</th>
+        </tr>
+        <tr v-for="(state, idx) in statesArray">
+            <td>{{ state }}</td>
+            <td v-for="(symbol, cidx) in symbolsArray"><input v-model="transitions[idx][cidx]"></td>
+        </tr>
+    </table>
+    <input v-model="startingSymbols" placeholder="starting symbols">
+    <input v-model="startingState" placeholder="starting state">
+    <input type="button" value="Render" v-on:click="render">
+    <input type="button" value="Go" v-on:click="go">
+    <table>
+        <tr>
+            <th>XXXX</th>
+            <th v-for="idx in 10">{{ idx + indicator - 1 }}</th>
+        </tr>
+        <tr>
+            <td>Last</td>
+            <td v-for="symbol in lastSymbols">{{ symbol }}</td>
+        </tr>
+        <tr>
+            <td>Now</td>
+            <td v-for="symbol in currentSymbols">{{ symbol }}</td>
+        </tr>
+    </table>
+    {{ currentSymbols }}
+    {{ usingSymbols }}
+    {{ indicator }}
+</div>
+
+<script>
+    var app = new Vue({
+        el: '#app',
+        data: {
+            states: 'A B C',
+            symbols: '0 1',
+            transitions: [new Array(2), new Array(2), new Array(2)],
+            startingSymbols: '1 0 1 0',
+            startingState: 'A',
+            usingSymbols: [],
+            currentSymbols: [],
+            lastSymbols: [],
+            indicator: 0,
+            currentState: 'A'
+        },
+        methods: {
+            trimAndSplit: function (str) {
+                return str.trim().replace(/(^,)|(,+$)/g, "").split(/[\s,]+/)
+            },
+            render: function (event) {
+                this.usingSymbols = this.trimAndSplit(this.startingSymbols)
+                this.currentSymbols = this.usingSymbols.slice(0, 9)
+                this.currentSymbols.unshift(undefined)
+                this.lastSymbols = this.usingSymbols.slice(0, 9)
+                this.lastSymbols.unshift(undefined)
+                this.currentState = this.startingState
+                this.indicator = 0
+            },
+            go: function (event) {
+                let stateIndex = this.statesArray.indexOf(this.currentState)
+                if (stateIndex < 0) {
+                    alert('Wrong state')
+                    return;
+                }
+                let symbol = this.usingSymbols[this.indicator]
+                if (typeof symbol === 'undefined') {
+                    return;
+                }
+                let symbolIndex = this.symbolsArray.indexOf(symbol)
+                if (symbolIndex < 0) {
+                    alert('Wrong symbol')
+                    return;
+                }
+                let transition = this.transitions[stateIndex][symbolIndex]
+                if (typeof transition !== 'undefined') {
+                    this.usingSymbols[this.indicator] = transition[0]
+                    this.currentState = transition[1]
+                    if (transition[2] === 'R') {
+                        this.indicator++
+                    } else {
+                        this.indicator--
+                    }
+                } else {
+                    alert('No transition')
+                }
+                
+                this.currentSymbols = this.usingSymbols.slice(this.indicator - 1, this.indicator + 9)
+            }
+        },
+        computed: {
+            statesArray: function () {
+                return this.trimAndSplit(this.states)
+            },
+            symbolsArray: function () {
+                return this.trimAndSplit(this.symbols)
+            }
+        },
+        watch: {
+            statesArray: function (newStates, oldStates) {
+                if (newStates.length !== oldStates.length) {
+                    if (newStates.length > this.transitions.length) {
+                        this.transitions.push(new Array(this.symbolsArray.length))
+                    }
+                }
+            },
+            symbolsArray: function (newSymbols, oldSymbols) {
+                if (newSymbols.length !== oldSymbols.length) {
+                    if (newSymbols.length > this.transitions[0].length) {
+                        for (let index = 0; index < this.transitions.length; index++) {
+                            const row = this.transitions[index];
+                            row.push(undefined)
+                        }
+                    }
+                }
+            }
+        },
+    })
+</script>
+</body>
+</html>
