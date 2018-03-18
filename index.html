@@ -71,14 +71,14 @@
                 this.indicator = 0
             },
             go: function (event) {
-                let stateIndex = this.statesArray.indexOf(this.currentState)
-                if (stateIndex < 0) {
-                    alert('Wrong state')
-                    return;
-                }
                 let symbol = this.usingSymbols[this.indicator]
                 if (typeof symbol === 'undefined') {
                     this.currentState = 'FIN'
+                    return;
+                }
+                let stateIndex = this.statesArray.indexOf(this.currentState)
+                if (stateIndex < 0) {
+                    alert('Wrong state')
                     return;
                 }
                 let symbolIndex = this.symbolsArray.indexOf(symbol)
