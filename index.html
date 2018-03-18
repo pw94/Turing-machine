@@ -23,9 +23,9 @@
     <input v-model="startingState" placeholder="starting state">
     <input type="button" value="Render" v-on:click="render">
     <input type="button" value="Go" v-on:click="go">
-    <table>
+    <table v-if="isRendered">
         <tr>
-            <th>XXXX</th>
+            <th>State: {{ currentState }} | </th>
             <th v-for="idx in 10">{{ idx + indicator - 1 }}</th>
         </tr>
         <tr>
@@ -78,6 +78,7 @@
                 }
                 let symbol = this.usingSymbols[this.indicator]
                 if (typeof symbol === 'undefined') {
+                    this.currentState = 'FIN'
                     return;
                 }
                 let symbolIndex = this.symbolsArray.indexOf(symbol)
@@ -87,18 +88,22 @@
                 }
                 let transition = this.transitions[stateIndex][symbolIndex]
                 if (typeof transition !== 'undefined') {
+                    this.lastSymbols = this.currentSymbols.slice()
                     this.usingSymbols[this.indicator] = transition[0]
                     this.currentState = transition[1]
                     if (transition[2] === 'R') {
+                        this.lastSymbols.shift()
+                        this.lastSymbols.push(this.usingSymbols[this.indicator + 10])
                         this.indicator++
                     } else {
+                        this.lastSymbols.pop()
+                        this.lastSymbols.unshift(this.usingSymbols[this.indicator - 1])                        
                         this.indicator--
                     }
+                    this.currentSymbols = this.usingSymbols.slice(this.indicator - 1, this.indicator + 9)
                 } else {
                     alert('No transition')
-                }
-                
-                this.currentSymbols = this.usingSymbols.slice(this.indicator - 1, this.indicator + 9)
+                }                
             }
         },
         computed: {
@@ -107,6 +112,9 @@
             },
             symbolsArray: function () {
                 return this.trimAndSplit(this.symbols)
+            },
+            isRendered: function () {
+                return this.usingSymbols.length > 0
             }
         },
         watch: {
