@@ -22,7 +22,7 @@
     <input v-model="startingSymbols" placeholder="starting symbols">
     <input v-model="startingState" placeholder="starting state">
     <input type="button" value="Render" v-on:click="render">
-    <input type="button" value="Go" v-on:click="go">
+    <input type="button" value="Go" v-on:click="go" v-if="isRendered">
     <table v-if="isRendered">
         <tr>
             <th>State: {{ currentState }} | </th>
@@ -99,10 +99,20 @@
                         if (this.lastSymbols.length > 9) {
                             this.lastSymbols.pop()
                         }
-                        this.lastSymbols.unshift(this.usingSymbols[this.indicator - 1])                        
+                        this.lastSymbols.unshift(this.usingSymbols[this.indicator - 2])                        
                         this.indicator--
                     }
-                    this.currentSymbols = this.usingSymbols.slice(this.indicator - 1, this.indicator + 9)
+                    if (this.indicator < 0) {
+                        this.currentSymbols = this.usingSymbols.slice(0, 8)
+                        this.currentSymbols.unshift(undefined)
+                        this.currentSymbols.unshift(undefined)
+                        this.currentState = 'FIN'
+                    } else if (this.indicator == 0) {
+                        this.currentSymbols = this.usingSymbols.slice(0, 9)
+                        this.currentSymbols.unshift(undefined)
+                    } else {
+                        this.currentSymbols = this.usingSymbols.slice(this.indicator - 1, this.indicator + 9)
+                    }
                 } else {
                     alert('No transition')
                 }                
