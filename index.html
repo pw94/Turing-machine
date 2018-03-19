@@ -1,47 +1,127 @@
 <!DOCTYPE html>
 <html>
+
 <head>
     <meta charset="utf-8"/>
     <title>Turing machine</title>
-    <script src="https://unpkg.com/vue"></script>
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.5.16/dist/vue.js"></script>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
+          integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm"
+          crossorigin="anonymous">
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"
+            integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
+            crossorigin="anonymous"></script>
 </head>
+
 <body>
 <div id="app">
-    <input v-model="states" placeholder="states">
-    <input v-model="symbols" placeholder="symbols">
-    <table>
-        <tr>
-            <th>X</th>
-            <th v-for="symbol in symbolsArray">{{ symbol }}</th>
-        </tr>
-        <tr v-for="(state, idx) in statesArray">
-            <td>{{ state }}</td>
-            <td v-for="(symbol, cidx) in symbolsArray"><input v-model="transitions[idx][cidx]"></td>
-        </tr>
-    </table>
-    <input v-model="startingSymbols" placeholder="starting symbols">
-    <input v-model="startingState" placeholder="starting state">
-    <input type="button" value="Render" v-on:click="render">
-    <input type="button" value="Go" v-on:click="go" v-if="isRendered">
-    <table v-if="isRendered">
-        <tr>
-            <th>State: {{ currentState }} | </th>
-            <th v-for="idx in 10">{{ idx + indicator - 1 }}</th>
-        </tr>
-        <tr>
-            <td>Last</td>
-            <td v-for="symbol in lastSymbols">{{ symbol }}</td>
-        </tr>
-        <tr>
-            <td>Now</td>
-            <td v-for="symbol in currentSymbols">{{ symbol }}</td>
-        </tr>
-    </table>
-    {{ currentSymbols }}
-    {{ usingSymbols }}
-    {{ indicator + 1 }}
+    <div class="container">
+        <div class="row mt-3">
+            <div class="col-sm">
+                States
+            </div>
+            <div class="col-sm">
+                Symbols
+            </div>
+        </div>
+        <div class="row mt-1">
+            <div class="col-sm">
+                <input v-model="states" placeholder="states">
+            </div>
+            <div class="col-sm">
+                <input v-model="symbols" placeholder="symbols">
+            </div>
+        </div>
+        <div class="row mt-3">
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                    <tr>
+                        <th></th>
+                        <th v-for="symbol in symbolsArray">{{ symbol }}</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr v-for="(state, idx) in statesArray">
+                        <th scope="row">{{ state }}</th>
+                        <td v-for="(symbol, cidx) in symbolsArray">
+                            <input v-model="transitions[idx][cidx]">
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="row mt-3">
+            <div class="col-sm">
+                Starting symbols
+            </div>
+            <div class="col-sm">
+                Strating state
+            </div>
+            <div class="col-sm"></div>
+        </div>
+        <div class="row mt-1">
+            <div class="col-sm">
+                <input v-model="startingSymbols" placeholder="starting symbols">
+            </div>
+            <div class="col-sm">
+                <input v-model="startingState" placeholder="starting state">
+            </div>
+            <div class="col-sm">
+                <input type="button" value="Render" v-on:click="render">
+            </div>
+        </div>
+
+        <div class="row mt-2 mb-2" v-if="isRendered">
+            <div class="col-sm">
+                <input type="button" value="Go" v-on:click="go" :disabled="!active">
+            </div>
+            <div class="col-sm">
+                <input v-model.number="repetitionNumber" placeholder="times">
+                times
+            </div>
+            <div class="col-sm">
+                <input type="button" value="Repeat multiple times" v-on:click="repeat" :disabled="!active">
+            </div>
+        </div>
+
+        <div class="alert alert-danger" v-if="error">
+            {{ error }}
+        </div>
+
+        <div class="alert alert-info" v-if="info">
+            {{ info }}
+        </div>
+
+        <table class="table table-dark mt-3" v-if="isRendered">
+            <thead class="thead-light">
+            <tr>
+                <th></th>
+                <th v-for="idx in 10">{{ idx + indicator - 1 }}</th>
+            </tr>
+            </thead>
+            <tfoot>
+            <tr>
+                <th scope="row">Current state:</th>
+                <td>{{ currentState }}</td>
+                <td class="bg-info">^</td>
+            </tr>
+            </tfoot>
+            <tbody>
+            <tr>
+                <th scope="row">Before
+                </td>
+                <td v-for="symbol in lastSymbols">{{ symbol }}</td>
+            </tr>
+            <tr>
+                <th scope="row">Now
+                </td>
+                <td v-for="symbol in currentSymbols">{{ symbol }}</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
 </div>
 
 <script>
@@ -57,7 +137,11 @@
             currentSymbols: [],
             lastSymbols: [],
             indicator: 0,
-            currentState: 'A'
+            currentState: 'A',
+            repetitionNumber: 2,
+            active: false,
+            error: undefined,
+            info: undefined
         },
         methods: {
             trimAndSplit: function (str) {
@@ -71,21 +155,27 @@
                 this.lastSymbols.unshift(undefined)
                 this.currentState = this.startingState
                 this.indicator = 0
+                this.active = true
+                this.error = undefined
+                this.info = undefined
             },
             go: function (event) {
                 let symbol = this.usingSymbols[this.indicator]
                 if (typeof symbol === 'undefined') {
-                    this.currentState = 'FIN'
+                    this.active = false
+                    this.info = 'Reached the end of the symbols on the tape'
                     return;
                 }
                 let stateIndex = this.statesArray.indexOf(this.currentState)
                 if (stateIndex < 0) {
-                    alert('Wrong state')
+                    this.error = 'Undefined state'
+                    this.active = false
                     return;
                 }
                 let symbolIndex = this.symbolsArray.indexOf(symbol)
                 if (symbolIndex < 0) {
-                    alert('Wrong symbol')
+                    this.error = 'Undefined symbol'
+                    this.active = false
                     return;
                 }
                 let transition = this.transitions[stateIndex][symbolIndex]
@@ -101,23 +191,35 @@
                         if (this.lastSymbols.length > 9) {
                             this.lastSymbols.pop()
                         }
-                        this.lastSymbols.unshift(this.usingSymbols[this.indicator - 2])                        
+                        this.lastSymbols.unshift(this.usingSymbols[this.indicator - 2])
                         this.indicator--
                     }
                     if (this.indicator < 0) {
                         this.currentSymbols = this.usingSymbols.slice(0, 8)
                         this.currentSymbols.unshift(undefined)
                         this.currentSymbols.unshift(undefined)
-                        this.currentState = 'FIN'
-                    } else if (this.indicator == 0) {
+                        this.active = false
+                        this.info = 'Reached the end of the symbols on the tape'
+                    } else if (this.indicator === 0) {
                         this.currentSymbols = this.usingSymbols.slice(0, 9)
                         this.currentSymbols.unshift(undefined)
                     } else {
                         this.currentSymbols = this.usingSymbols.slice(this.indicator - 1, this.indicator + 9)
                     }
                 } else {
-                    alert('No transition')
-                }                
+                    this.error = 'Undefined transition'
+                    this.active = false
+                }
+                let newSymbol = this.usingSymbols[this.indicator]
+                if (typeof newSymbol === 'undefined') {
+                    this.active = false
+                    this.info = 'Reached the end of the symbols on the tape'
+                }
+            },
+            repeat: function (event) {
+                for (let i = 0; this.active && i < this.repetitionNumber; i++) {
+                    this.go()
+                }
             }
         },
         computed: {
@@ -150,7 +252,11 @@
                 }
             }
         },
+        created: function () {
+            this.transitions[0][0] = '1AR'
+        }
     })
 </script>
 </body>
+
 </html>
