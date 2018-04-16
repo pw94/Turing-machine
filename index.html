@@ -100,11 +100,11 @@
             </div>
         </div>
 
-        <div class="alert alert-danger" v-if="error">
+        <div class="alert alert-danger m-1" v-if="error">
             {{ error }}
         </div>
 
-        <div class="alert alert-info" v-if="info">
+        <div class="alert alert-info m-1" v-if="info">
             {{ info }}
         </div>
 
@@ -263,6 +263,7 @@
                     this.error = 'Import exported file'
                     return
                 }
+                this.error = undefined
                 let reader = new FileReader()
                 reader.onload = e => {
                     let importedData = JSON.parse(e.target.result)
