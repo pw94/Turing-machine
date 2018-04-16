@@ -18,6 +18,14 @@
     <div class="container">
         <div class="row mt-3">
             <div class="col-sm">
+                <input type="button" value="Export" v-on:click="exportToFile">
+            </div>
+            <div class="col-sm">
+                <input type="button" value="Import" v-on:click="importToFile">
+            </div>
+        </div>
+        <div class="row mt-3">
+            <div class="col-sm">
                 States
             </div>
             <div class="col-sm">
@@ -127,7 +135,7 @@
 <script>
     Vue.config.productionTip = true
 
-    var app = new Vue({
+    new Vue({
         el: '#app',
         data: {
             states: 'A B C',
@@ -148,7 +156,7 @@
         },
         methods: {
             trimAndSplit: function (str) {
-                return str.trim().replace(/(^,)|(,+$)/g, "").split(/[\s,]+/)
+                return str.trim().replace(/(^,)|(,+$)/g, '').split(/[\s,]+/)
             },
             render: function (event) {
                 this.usingSymbols = this.trimAndSplit(this.startingSymbols)
@@ -166,19 +174,19 @@
                 if (typeof symbol === 'undefined') {
                     this.active = false
                     this.info = 'Reached the end of the symbols on the tape'
-                    return;
+                    return
                 }
                 let stateIndex = this.statesArray.indexOf(this.currentState)
                 if (stateIndex < 0) {
                     this.error = 'Undefined state'
                     this.active = false
-                    return;
+                    return
                 }
                 let symbolIndex = this.symbolsArray.indexOf(symbol)
                 if (symbolIndex < 0) {
                     this.error = 'Undefined symbol'
                     this.active = false
-                    return;
+                    return
                 }
                 let transition = this.transitions[stateIndex][symbolIndex]
                 if (typeof transition !== 'undefined') {
@@ -222,6 +230,29 @@
                 for (let i = 0; this.active && i < this.repetitionNumber; i++) {
                     this.go()
                 }
+            },
+            exportToFile: function (event) {
+                let exportData = {}
+                let keys = ['states', 'symbols', 'transitions', 'startingSymbols', 'startingState']
+                keys.forEach((element, index, array) => {
+                    exportData[element] = this.$data[element]
+                })
+                this.download('exportData.json', JSON.stringify(exportData))
+            },
+            importToFile: function (event) {
+                console.log(this.$data)
+            },
+            download: function (filename, text) {
+                var element = document.createElement('a')
+                element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text))
+                element.setAttribute('download', filename)
+
+                element.style.display = 'none'
+                document.body.appendChild(element)
+
+                element.click()
+
+                document.body.removeChild(element)
             }
         },
         computed: {
@@ -247,7 +278,7 @@
                 if (newSymbols.length !== oldSymbols.length) {
                     if (newSymbols.length > this.transitions[0].length) {
                         for (let index = 0; index < this.transitions.length; index++) {
-                            const row = this.transitions[index];
+                            const row = this.transitions[index]
                             row.push(undefined)
                         }
                     }
