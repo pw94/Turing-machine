@@ -18,10 +18,16 @@
     <div class="container">
         <div class="row mt-3">
             <div class="col-sm">
-                <input type="button" value="Export" v-on:click="exportToFile">
+                <div class="form-group">
+                    <label for="exportFile">Export file</label><br />
+                    <input id="exportFile" type="button" value="Export" v-on:click="exportToFile">
+                </div>
             </div>
             <div class="col-sm">
-                <input type="button" value="Import" v-on:click="importToFile">
+                <div class="form-group">
+                    <label for="inputFile">Import file</label>
+                    <input type="file" class="form-control-file" v-on:change="importToFile" id="inputFile">
+                </div>
             </div>
         </div>
         <div class="row mt-3">
@@ -239,9 +245,6 @@
                 })
                 this.download('exportData.json', JSON.stringify(exportData))
             },
-            importToFile: function (event) {
-                console.log(this.$data)
-            },
             download: function (filename, text) {
                 var element = document.createElement('a')
                 element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text))
@@ -253,6 +256,23 @@
                 element.click()
 
                 document.body.removeChild(element)
+            },
+            importToFile: function (event) {
+                let file = event.target.files[0]
+                if (file.type !== 'application/json') {
+                    this.error = 'Import exported file'
+                    return
+                }
+                let reader = new FileReader()
+                reader.onload = e => {
+                    let importedData = JSON.parse(e.target.result)
+                    this.states = importedData.states
+                    this.symbols = importedData.symbols
+                    this.transitions = importedData.transitions
+                    this.startingSymbols = importedData.startingSymbols
+                    this.startingState = importedData.startingState
+                }
+                reader.readAsText(file)
             }
         },
         computed: {
