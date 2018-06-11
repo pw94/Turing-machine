@@ -135,12 +135,32 @@
             </tr>
             </tbody>
         </table>
+        <div class="row mt-2 mb-2" v-if="isRendered">
+            <div class="col-sm">
+                Current states from:
+            </div>
+            <div class="col-sm">
+                <input v-model.number="previewNumber">
+            </div>
+        </div>
+        <table class="table table-dark mt-3" v-if="isRendered">
+            <thead class="thead-light">
+            <tr>
+                <th></th>
+                <th v-for="idx in DISPLAYED_ELEMENTS_NUMBER">{{ idx + previewNumber - 1 }}</th>
+            </tr>
+            </thead>
+            <tr>
+                <th scope="row">Now
+                </td>
+                <td v-for="symbol in previewSymbols">{{ symbol }}</td>
+            </tr>
+            </tbody>
+        </table>
     </div>
 </div>
 
 <script>
-    Vue.config.productionTip = true
-
     new Vue({
         el: '#app',
         data: {
@@ -151,6 +171,7 @@
             startingState: 'A',
             usingSymbols: [],
             currentSymbols: [],
+            previewSymbols: [],
             lastSymbols: [],
             indicator: 0,
             currentState: 'A',
@@ -158,7 +179,8 @@
             active: false,
             error: undefined,
             info: undefined,
-            DISPLAYED_ELEMENTS_NUMBER: 10
+            DISPLAYED_ELEMENTS_NUMBER: 10,
+            previewNumber: 1
         },
         methods: {
             trimAndSplit: function (str) {
@@ -174,6 +196,7 @@
                 this.active = true
                 this.error = undefined
                 this.info = undefined
+                this.preview()
             },
             go: function (event) {
                 let symbol = this.usingSymbols[this.indicator]
@@ -231,6 +254,7 @@
                     this.active = false
                     this.info = 'Reached the end of the symbols on the tape'
                 }
+                this.preview()
             },
             repeat: function (event) {
                 for (let i = 0; this.active && i < this.repetitionNumber; i++) {
@@ -274,6 +298,11 @@
                     this.startingState = importedData.startingState
                 }
                 reader.readAsText(file)
+            },
+            preview : function () {
+                for (let uindex = this.previewNumber - 1, index = 0; uindex < this.previewNumber + this.DISPLAYED_ELEMENTS_NUMBER - 1; uindex++, index++) {
+                    this.previewSymbols[index] = this.usingSymbols[uindex]
+                }
             }
         },
         computed: {
@@ -304,6 +333,9 @@
                         }
                     }
                 }
+            },
+            previewNumber: function (newNumber, oldNumber) {
+                this.preview()
             }
         },
         created: function () {
